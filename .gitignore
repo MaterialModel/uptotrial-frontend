@@ -1,0 +1,29 @@
+node_modules
+.DS_Store
+dist
+build
+dist-ssr
+*.local
+
+yarn-error.log*
+.pnpm-debug.log*
+
+# TS
+*.tsbuildinfo
+
+# Turbo
+.turbo
+
+.vscode/settings.json
+
+stats.*
+
+# Test
+coverage/
+
+# ESLint
+.eslintcache
+
+
+# React Router
+.react-router
