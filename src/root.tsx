@@ -11,8 +11,7 @@ import {
 import { Layout as AppLayout } from '@/lib/layout';
 import type { Route } from './+types/root';
 
-// fonts
-import '@fontsource-variable/plus-jakarta-sans';
+// Import global styles
 import '@/lib/styles/globals.css';
 
 export function Layout({ children }: { children: React.ReactNode }) {
