@@ -1,7 +1,6 @@
 import { HelmetProvider } from 'react-helmet-async';
 import {
   Links,
-  Meta,
   Outlet,
   Scripts,
   ScrollRestoration,
@@ -16,13 +15,12 @@ import '@/lib/styles/globals.css';
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <meta charSet="UTF-8" />
         <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>vite-react-tailwind-starter</title>
-        <Meta />
         <Links />
       </head>
       <body>

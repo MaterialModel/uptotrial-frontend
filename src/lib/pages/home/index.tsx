@@ -1,59 +1,172 @@
-import { useState } from 'react';
-import { getMockTrials } from './components/mock-data';
-import { SearchBar } from './components/search-bar';
-import { TrialCard } from './components/trial-card';
-import type { Trial } from './components/trial-card';
+import { useEffect, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { ChatInterface } from './components/chat-interface';
+
+// API base URL
+const API_BASE_URL = 'http://localhost:8000';
+
+// Helper functions for API and correlation ID
+const generateCorrelationId = (): string => {
+  const characters =
+    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let result = 'corr_';
+  for (let i = 0; i < 12; i++) {
+    result += characters.charAt(Math.floor(Math.random() * characters.length));
+  }
+  return result;
+};
+
+const getCorrelationId = (): string => {
+  if (typeof window === 'undefined') {
+    return '';
+  }
+
+  let correlationId = localStorage.getItem('x-correlation-id');
+  if (!correlationId) {
+    correlationId = generateCorrelationId();
+    localStorage.setItem('x-correlation-id', correlationId);
+  }
+  return correlationId;
+};
+
+// Chat API functions
+interface ChatMessage {
+  role: string;
+  content: string;
+}
+
+interface ChatResponse {
+  messages: Array<ChatMessage>;
+  session_uuid: string;
+}
+
+const createNewSession = async (message: string): Promise<ChatResponse> => {
+  const correlationId = getCorrelationId();
+  const response = await fetch(`${API_BASE_URL}/api/v1/sessions/chat`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Correlation-ID': correlationId,
+    },
+    body: JSON.stringify({ text: message }),
+    mode: 'cors',
+    credentials: 'include',
+  });
+
+  if (!response.ok) {
+    throw new Error(`API error: ${response.status}`);
+  }
+
+  return response.json();
+};
+
+const sendMessageToExistingSession = async (
+  message: string,
+  sessionId: string,
+): Promise<ChatResponse> => {
+  const correlationId = getCorrelationId();
+  const response = await fetch(
+    `${API_BASE_URL}/api/v1/sessions/chat/${sessionId}`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'correlation-id': correlationId,
+      },
+      body: JSON.stringify({ text: message }),
+      mode: 'cors',
+      credentials: 'include',
+    },
+  );
+
+  if (!response.ok) {
+    throw new Error(`API error: ${response.status}`);
+  }
+
+  return response.json();
+};
+
+const getExistingSession = async (sessionId: string): Promise<ChatResponse> => {
+  const response = await fetch(
+    `${API_BASE_URL}/api/v1/sessions/chat/${sessionId}`,
+    {
+      method: 'GET',
+      mode: 'cors',
+      credentials: 'include',
+    },
+  );
+
+  if (!response.ok) {
+    throw new Error(`API error: ${response.status}`);
+  }
+
+  return response.json();
+};
 
 const Home = () => {
-  const [searchResults, setSearchResults] = useState<Array<Trial>>([]);
-  const [isSearched, setIsSearched] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [activeCategory, setActiveCategory] = useState<string | null>(null);
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const sessionIdFromUrl = searchParams.get('session_uuid');
 
-  const handleSearch = (query: string) => {
-    setSearchQuery(query);
-    setIsSearched(true);
-    // Mock API call - in the future, this would be an actual API request
-    const results = getMockTrials(query);
-    setSearchResults(results);
-    setActiveCategory(null);
-  };
+  const [sessionId, setSessionId] = useState<string | null>(sessionIdFromUrl);
+  const [messages, setMessages] = useState<Array<ChatMessage>>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const questionCategories = [
-    {
-      id: 'results',
-      name: 'Trials with results',
-      examples: [
-        'Show me completed trials for breast cancer with positive results',
-        'Find phase 3 diabetes trials that reported efficacy over 50%',
-        'What heart disease trials had significant outcomes in the last 5 years',
-      ],
-    },
-    {
-      id: 'enrolling',
-      name: 'Currently enrolling',
-      examples: [
-        'Find recruiting lung cancer trials near Boston',
-        'Show me ongoing trials for children with rare genetic disorders',
-        "What Alzheimer's prevention studies are currently enrolling healthy adults",
-      ],
-    },
-    {
-      id: 'patient',
-      name: 'Patient-specific deep-dive',
-      examples: [
-        'Find trials for stage 3 colon cancer patients who failed first-line therapy',
-        'What options exist for elderly patients with treatment-resistant depression',
-        'Show me trials accepting patients with both diabetes and kidney disease',
-      ],
-    },
-  ];
+  // Load session from URL parameter if present
+  useEffect(() => {
+    const fetchSessionIfNeeded = async () => {
+      if (sessionIdFromUrl) {
+        try {
+          setIsLoading(true);
+          const chatData = await getExistingSession(sessionIdFromUrl);
+          setSessionId(chatData.session_uuid);
+          setMessages(chatData.messages);
+        } catch (err) {
+          setError('Failed to load existing session');
+          console.error(err);
+        } finally {
+          setIsLoading(false);
+        }
+      }
+    };
 
-  const toggleCategory = (categoryId: string) => {
-    if (activeCategory === categoryId) {
-      setActiveCategory(null);
-    } else {
-      setActiveCategory(categoryId);
+    fetchSessionIfNeeded();
+  }, [sessionIdFromUrl]);
+
+  // Handle sending a new message
+  const handleSendMessage = async (message: string) => {
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      // Add user message to the UI immediately
+      const userMessage: ChatMessage = { role: 'user', content: message };
+      setMessages((prevMessages) => [...prevMessages, userMessage]);
+
+      let chatResponse: ChatResponse;
+
+      if (!sessionId) {
+        // Create a new session if we don't have one
+        chatResponse = await createNewSession(message);
+        setSessionId(chatResponse.session_uuid);
+
+        // Update URL with session ID for future deep linking
+        navigate(`/?session_uuid=${chatResponse.session_uuid}`, {
+          replace: true,
+        });
+      } else {
+        // Send message to existing session
+        chatResponse = await sendMessageToExistingSession(message, sessionId);
+      }
+
+      // Update messages with the full response from the server
+      setMessages(chatResponse.messages);
+    } catch (err) {
+      setError('Failed to send message');
+      console.error(err);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -84,87 +197,13 @@ const Home = () => {
       </div>
 
       <div className="w-full min-w-[320px] md:min-w-[640px] lg:min-w-[768px] max-w-6xl">
-        <SearchBar onSearch={handleSearch} />
-
-        <div className="mt-4">
-          <div className="flex flex-wrap justify-center gap-3 mb-2">
-            {questionCategories.map((category) => (
-              <button
-                key={category.id}
-                type="button"
-                onClick={() => toggleCategory(category.id)}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  activeCategory === category.id
-                    ? 'bg-[#008BB0] text-white'
-                    : 'bg-gray-100 text-gray-800 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600'
-                }`}
-              >
-                {category.name}
-              </button>
-            ))}
-          </div>
-
-          {activeCategory && (
-            <div className="mt-3 flex flex-col gap-2 animate-fadeIn">
-              {questionCategories
-                .find((cat) => cat.id === activeCategory)
-                ?.examples.map((example) => (
-                  <button
-                    key={`example-${example.substring(0, 10)}`}
-                    type="button"
-                    onClick={() => handleSearch(example)}
-                    className="w-full text-left p-3 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 text-sm text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-700"
-                  >
-                    {example}
-                  </button>
-                ))}
-            </div>
-          )}
-        </div>
+        <ChatInterface
+          messages={messages}
+          onSendMessage={handleSendMessage}
+          isLoading={isLoading}
+          error={error}
+        />
       </div>
-
-      {isSearched && (
-        <div className="w-full max-w-5xl">
-          <div className="mb-4">
-            {searchResults.length > 0 ? (
-              <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200">
-                Found {searchResults.length} trials for "{searchQuery}"
-              </h2>
-            ) : (
-              <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200">
-                No trials found for "{searchQuery}"
-              </h2>
-            )}
-          </div>
-
-          {searchResults.length > 0 ? (
-            <div className="grid gap-4 md:grid-cols-2">
-              {searchResults.map((trial) => (
-                <TrialCard key={trial.id} trial={trial} />
-              ))}
-            </div>
-          ) : (
-            <div className="rounded-lg border border-gray-200 bg-white p-6 text-center dark:border-gray-700 dark:bg-gray-800">
-              <p className="text-gray-600 dark:text-gray-300">
-                No clinical trials match your search criteria. Try different
-                keywords or broaden your search.
-              </p>
-            </div>
-          )}
-        </div>
-      )}
-
-      {!isSearched && (
-        <div className="mt-8 w-full max-w-3xl rounded-lg border border-gray-200 bg-white p-6 text-center dark:border-gray-700 dark:bg-gray-800">
-          <h2 className="mb-3 text-xl font-semibold text-gray-800 dark:text-gray-200">
-            Find the exact clinical trials you're looking for
-          </h2>
-          <p className="text-gray-600 dark:text-gray-300">
-            Our agentic search auto-refines queries of the entire
-            clinicaltrials.gov database.
-          </p>
-        </div>
-      )}
     </div>
   );
 };

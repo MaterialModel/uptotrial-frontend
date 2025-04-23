@@ -11,7 +11,7 @@ type LayoutProps = {
 
 export const Layout = ({ children }: LayoutProps) => {
   return (
-    <ThemeProvider attribute="class">
+    <ThemeProvider attribute="class" enableSystem={true} defaultTheme="system">
       <Meta />
       <div className="flex min-h-screen flex-col dark:bg-black dark:text-white">
         <Header />
