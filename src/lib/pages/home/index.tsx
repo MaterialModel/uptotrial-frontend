@@ -1,107 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import {
+  type ChatMessage,
+  createNewSession,
+  getExistingSession,
+  sendMessageToExistingSession,
+} from '../../api';
 import { ChatInterface } from './components/chat-interface';
-
-// API base URL
-const API_BASE_URL = 'http://localhost:8000';
-
-// Helper functions for API and correlation ID
-const generateCorrelationId = (): string => {
-  const characters =
-    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  let result = 'corr_';
-  for (let i = 0; i < 12; i++) {
-    result += characters.charAt(Math.floor(Math.random() * characters.length));
-  }
-  return result;
-};
-
-const getCorrelationId = (): string => {
-  if (typeof window === 'undefined') {
-    return '';
-  }
-
-  let correlationId = localStorage.getItem('x-correlation-id');
-  if (!correlationId) {
-    correlationId = generateCorrelationId();
-    localStorage.setItem('x-correlation-id', correlationId);
-  }
-  return correlationId;
-};
-
-// Chat API functions
-interface ChatMessage {
-  role: string;
-  content: string;
-}
-
-interface ChatResponse {
-  messages: Array<ChatMessage>;
-  session_uuid: string;
-}
-
-const createNewSession = async (message: string): Promise<ChatResponse> => {
-  const correlationId = getCorrelationId();
-  const response = await fetch(`${API_BASE_URL}/api/v1/sessions/chat`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-Correlation-ID': correlationId,
-    },
-    body: JSON.stringify({ text: message }),
-    mode: 'cors',
-    credentials: 'include',
-  });
-
-  if (!response.ok) {
-    throw new Error(`API error: ${response.status}`);
-  }
-
-  return response.json();
-};
-
-const sendMessageToExistingSession = async (
-  message: string,
-  sessionId: string,
-): Promise<ChatResponse> => {
-  const correlationId = getCorrelationId();
-  const response = await fetch(
-    `${API_BASE_URL}/api/v1/sessions/chat/${sessionId}`,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'correlation-id': correlationId,
-      },
-      body: JSON.stringify({ text: message }),
-      mode: 'cors',
-      credentials: 'include',
-    },
-  );
-
-  if (!response.ok) {
-    throw new Error(`API error: ${response.status}`);
-  }
-
-  return response.json();
-};
-
-const getExistingSession = async (sessionId: string): Promise<ChatResponse> => {
-  const response = await fetch(
-    `${API_BASE_URL}/api/v1/sessions/chat/${sessionId}`,
-    {
-      method: 'GET',
-      mode: 'cors',
-      credentials: 'include',
-    },
-  );
-
-  if (!response.ok) {
-    throw new Error(`API error: ${response.status}`);
-  }
-
-  return response.json();
-};
 
 const Home = () => {
   const navigate = useNavigate();
@@ -113,6 +18,8 @@ const Home = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hasSubmittedInput, setHasSubmittedInput] = useState(false);
+  const [currentAssistantMessage, setCurrentAssistantMessage] =
+    useState<string>('');
 
   // Set hasSubmittedInput to true if we have a session UUID in the URL
   useEffect(() => {
@@ -152,36 +59,76 @@ const Home = () => {
       const userMessage: ChatMessage = { role: 'user', content: message };
       setMessages((prevMessages) => [...prevMessages, userMessage]);
 
-      let chatResponse: ChatResponse;
-
       if (!sessionId) {
-        // Create a new session if we don't have one
-        chatResponse = await createNewSession(message);
-        setSessionId(chatResponse.session_uuid);
+        // Create a new session using streaming endpoint
+        const newSessionId = await createNewSession(
+          message,
+          setCurrentAssistantMessage,
+        );
+        setSessionId(newSessionId);
 
         // Update URL with session ID for future deep linking
-        navigate(`/?session_uuid=${chatResponse.session_uuid}`, {
+        navigate(`/?session_uuid=${newSessionId}`, {
           replace: true,
         });
       } else {
-        // Send message to existing session
-        chatResponse = await sendMessageToExistingSession(message, sessionId);
+        // Send message to existing session using streaming endpoint
+        await sendMessageToExistingSession(
+          message,
+          sessionId,
+          setCurrentAssistantMessage,
+        );
       }
-
-      // Update messages with the full response from the server
-      setMessages(chatResponse.messages);
     } catch (err) {
       setError('Failed to send message');
       console.error(err);
     } finally {
-      setIsLoading(false);
+      // Small delay before setting isLoading to false
+      // This ensures the UI has time to render the final streamed response
+      setTimeout(() => {
+        setIsLoading(false);
+      }, 100);
     }
   };
+
+  // Update messages when streaming response completes
+  useEffect(() => {
+    if (!isLoading && currentAssistantMessage) {
+      const assistantMessage: ChatMessage = {
+        role: 'assistant',
+        content: currentAssistantMessage,
+      };
+      setMessages((prevMessages) => {
+        // Filter out any incomplete assistant message
+        const filteredMessages = prevMessages.filter(
+          (msg) => !(msg.role === 'assistant' && msg.content === ''),
+        );
+        return [...filteredMessages, assistantMessage];
+      });
+      setCurrentAssistantMessage('');
+    }
+  }, [isLoading, currentAssistantMessage]);
 
   // Handler for when the first input is submitted
   const handleInputSubmitted = () => {
     setHasSubmittedInput(true);
   };
+
+  // Show the current streaming message while loading
+  const displayMessages = [...messages];
+  if (isLoading && currentAssistantMessage) {
+    displayMessages.push({
+      role: 'assistant',
+      content: currentAssistantMessage,
+    });
+  } else if (currentAssistantMessage && !isLoading) {
+    // Add the completed message to display while it's being added to state
+    // This prevents the flash between streaming completion and state update
+    displayMessages.push({
+      role: 'assistant',
+      content: currentAssistantMessage,
+    });
+  }
 
   return (
     <div className="flex flex-col items-center gap-8 py-12 sm:px-4 md:px-8 lg:px-12">
@@ -241,7 +188,7 @@ const Home = () => {
 
       <div className="w-full min-w-[320px] md:min-w-[640px] lg:min-w-[768px] max-w-6xl">
         <ChatInterface
-          messages={messages}
+          messages={displayMessages}
           onSendMessage={handleSendMessage}
           isLoading={isLoading}
           error={error}
