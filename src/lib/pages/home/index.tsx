@@ -131,31 +131,10 @@ const Home = () => {
   }
 
   return (
-    <div className="flex flex-col items-center gap-8 py-12 sm:px-4 md:px-8 lg:px-12">
+    <div className={`flex flex-col items-center justify-center h-full gap-8 px-0 md:px-8 lg:px-12 pb-10 ${hasSubmittedInput ? 'pt-12' : 'pt-20 md:pt-28 lg:pt-40'}`}>
       {hasSubmittedInput ? (
-        // Compact header with just logo and title
-        <div className="fixed top-0 left-0 right-0 z-50 backdrop-blur-md bg-white/50 dark:bg-gray-900/50 border-b border-gray-200 dark:border-gray-700 py-3 px-4 transition-all duration-300">
-          <div className="max-w-3xl mx-auto flex items-center">
-            <img
-              src="/assets/uptotrail.svg"
-              alt="UpToTrial Logo"
-              className="h-8 w-auto mr-3"
-            />
-            <h1 className="text-xl font-bold text-gray-900 dark:text-white">
-              <span
-                className="text-black dark:text-white tracking-tight"
-                style={{
-                  fontFamily:
-                    "'Gantari', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-                  fontWeight: 500,
-                  letterSpacing: '0.02em',
-                }}
-              >
-                UpToTrial
-              </span>
-            </h1>
-          </div>
-        </div>
+        // Remove the extra space div
+        <></>
       ) : (
         // Full title and logo for initial page
         <div className="mb-2 text-center">
@@ -182,9 +161,6 @@ const Home = () => {
           </p>
         </div>
       )}
-
-      {/* Add top padding when header is fixed */}
-      {hasSubmittedInput && <div className="h-16" />}
 
       <div className="w-full min-w-[320px] md:min-w-[640px] lg:min-w-[768px] max-w-6xl">
         <ChatInterface

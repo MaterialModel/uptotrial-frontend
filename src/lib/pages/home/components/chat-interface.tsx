@@ -1,7 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { ChatInput } from './chat-input'; // Adjust path
 // Import new components
 import { MessageList } from './message-list'; // Adjust path
+
+// Custom event name for chat input sticky state changes
+const CHAT_INPUT_STICKY_EVENT = 'chatInputStickyChange';
 
 // Keep ChatMessage type definition here or move to a shared types file
 interface ChatMessage {
@@ -16,6 +19,7 @@ interface ChatInterfaceProps {
   error: string | null;
   hasSubmittedInput?: boolean; // Optional prop from parent
   onInputSubmitted?: () => void; // Optional callback for parent
+  onFooterVisibilityChange?: (visible: boolean) => void; // Callback to control original footer visibility
 }
 
 // Define categories here if needed by parent, otherwise they are encapsulated in ChatInput
@@ -28,6 +32,7 @@ export const ChatInterface = ({
   error,
   hasSubmittedInput: externalHasSubmittedInput,
   onInputSubmitted,
+  onFooterVisibilityChange,
 }: ChatInterfaceProps) => {
   const [inputValue, setInputValue] = useState('');
   const [placeholder, setPlaceholder] = useState('');
@@ -36,6 +41,7 @@ export const ChatInterface = ({
   const [activeCategory, setActiveCategory] = useState<CategoryKey | null>(
     null,
   );
+  const suggestionsRef = useRef<HTMLDivElement>(null);
 
   // Use external state if provided, otherwise use internal state
   const hasSubmittedInput =
@@ -45,6 +51,52 @@ export const ChatInterface = ({
 
   const hasMessages = messages.length > 0;
   const shouldShowStickyInput = hasMessages || hasSubmittedInput || isLoading;
+
+  // Close expanded suggestions when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (activeCategory && 
+          suggestionsRef.current && 
+          !suggestionsRef.current.contains(event.target as Node)) {
+        setActiveCategory(null);
+      }
+    };
+
+    document.addEventListener('click', handleClickOutside);
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, [activeCategory]);
+
+  // Dispatch custom event for header when sticky input state changes
+  useEffect(() => {
+    // Create and dispatch custom event
+    const event = new CustomEvent(CHAT_INPUT_STICKY_EVENT, {
+      detail: { isSticky: shouldShowStickyInput }
+    });
+    window.dispatchEvent(event);
+  }, [shouldShowStickyInput]);
+
+  // Notify parent about footer visibility when sticky input state changes
+  useEffect(() => {
+    onFooterVisibilityChange?.(!shouldShowStickyInput);
+  }, [shouldShowStickyInput, onFooterVisibilityChange]);
+
+  // Add effect to modify body style when sticky input is shown
+  useEffect(() => {
+    if (shouldShowStickyInput) {
+      // Add padding to body to prevent content from being hidden behind fixed elements
+      document.body.style.paddingBottom = "157px"; // Account for input (135px) + footer (22px)
+    } else {
+      // Reset styles when not showing sticky input
+      document.body.style.paddingBottom = "30px"; // Small padding for footer only
+    }
+    
+    // Cleanup function
+    return () => {
+      document.body.style.paddingBottom = "";
+    };
+  }, [shouldShowStickyInput]);
 
   // Update placeholder based on screen size
   useEffect(() => {
@@ -90,15 +142,12 @@ export const ChatInterface = ({
   };
 
   return (
-    <div className="flex flex-col w-full h-full">
-      {' '}
-      {/* Ensure full height if needed */}
-      {/* Chat messages area */}
-      <div className="flex-grow overflow-y-auto">
-        {' '}
-        {/* Make message list scrollable */}
+    <div id="chat-interface-container" className="flex flex-col w-full h-full relative"> 
+      {/* Chat messages area - changed from flex-grow to min-h-0 */}
+      <div className="min-h-0 overflow-y-auto pb-0">
         <MessageList messages={messages} />
       </div>
+      
       {/* Error message */}
       {error && (
         <div className="p-4 max-w-3xl mx-auto w-full">
@@ -107,44 +156,48 @@ export const ChatInterface = ({
           </div>
         </div>
       )}
+      
       {/* Input Area - Conditionally Rendered: Initial Centered or Sticky Bottom */}
       {!shouldShowStickyInput && (
         // Centered input before messages/submission
-        <div className="w-full max-w-2xl mx-auto px-4 pt-4 pb-8">
-          {' '}
-          {/* Adjusted padding */}
-          <ChatInput
-            inputValue={inputValue}
-            onInputChange={handleInputChange}
-            onSendMessage={handleSendMessage}
-            isLoading={isLoading}
-            placeholder={placeholder}
-            showExamples={true} // Always show examples initially
-            activeCategory={activeCategory}
-            onToggleCategory={handleToggleCategory}
-          />
-        </div>
-      )}
-      {shouldShowStickyInput && (
-        // Sticky input at the bottom
-        <div className="sticky bottom-0 left-0 right-0 p-3 sm:p-4 backdrop-blur-md bg-white/50 dark:bg-gray-900/50 border-t border-gray-200/50 dark:border-gray-700/50 z-50 transition-all duration-300 ease-in-out">
-          <div className="max-w-3xl mx-auto">
+        <div className="w-full max-w-2xl mx-auto px-0 sm:px-4 pt-4 pb-8">
+          <div ref={suggestionsRef}>
             <ChatInput
               inputValue={inputValue}
               onInputChange={handleInputChange}
               onSendMessage={handleSendMessage}
               isLoading={isLoading}
               placeholder={placeholder}
-              showExamples={false} // Do not show examples in sticky mode
-              activeCategory={null} // Don't need category state in sticky
-              onToggleCategory={() => {}} // No-op toggle in sticky
+              showExamples={true} // Always show examples initially
+              activeCategory={activeCategory}
+              onToggleCategory={handleToggleCategory}
+              isSticky={false} // This is the non-sticky input
             />
           </div>
         </div>
       )}
-      {/* Spacer div only needed if using sticky input to prevent overlap */}
-      {/* {shouldShowStickyInput && <div className="h-28 sm:h-24 flex-shrink-0" />} */}
-      {/* Note: Using sticky positioning often removes the need for a spacer if the scrollable container (`flex-grow`) handles the padding-bottom */}
+      
+      {/* Sticky bottom container for input */}
+      {shouldShowStickyInput && (
+        <div className="fixed bottom-[22px] left-0 right-0 z-[850]"> {/* Reduced space between input and footer */}
+          {/* Chat input */}
+          <div className="px-0 py-2 sm:p-4 backdrop-blur-xl bg-white/40 dark:bg-gray-900/40 border-t border-gray-200/50 dark:border-gray-700/50 shadow-none transition-all duration-300 ease-in-out">
+            <div className="w-full max-w-3xl mx-auto">
+              <ChatInput
+                inputValue={inputValue}
+                onInputChange={handleInputChange}
+                onSendMessage={handleSendMessage}
+                isLoading={isLoading}
+                placeholder={placeholder}
+                showExamples={false} // Do not show examples in sticky mode
+                activeCategory={null} // Don't need category state in sticky
+                onToggleCategory={() => {}} // No-op toggle in sticky
+                isSticky={true} // This is the sticky input
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

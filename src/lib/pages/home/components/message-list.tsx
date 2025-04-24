@@ -13,14 +13,30 @@ interface MessageListProps {
 export const MessageList = ({ messages }: MessageListProps) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Scroll to bottom when messages change
+  // Custom scroll logic - only scroll when content is at least halfway down the page
   useEffect(() => {
-    // Use timeout to ensure DOM updates before scrolling
-    const timer = setTimeout(() => {
-      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }, 10); // Small delay can help
+    if (messages.length === 0) return;
+
+    const checkScrollPosition = () => {
+      if (!messagesEndRef.current) return;
+
+      // Get viewport dimensions
+      const viewportHeight = window.innerHeight;
+      
+      // Get position of the end marker
+      const rect = messagesEndRef.current.getBoundingClientRect();
+      
+      // Only scroll if end marker is below the halfway point of the viewport
+      // (rect.top > viewportHeight / 2) means it's in the bottom half of the screen or lower
+      if (rect.top > viewportHeight / 2) {
+        messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+      }
+    };
+
+    // Small delay to ensure DOM updates
+    const timer = setTimeout(checkScrollPosition, 50);
     return () => clearTimeout(timer);
-  }, [messages]); // Trigger effect when messages array changes reference
+  }, [messages]);
 
   if (messages.length === 0) {
     return null; // Don't render anything if no messages

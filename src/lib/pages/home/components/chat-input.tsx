@@ -1,6 +1,6 @@
 import type React from 'react';
 import { useEffect, useRef } from 'react';
-import { LoadingSpinner } from './loading-spinner'; // Adjust path
+// import { LoadingSpinner } from './loading-spinner'; // Adjust path - REMOVED
 import { SendIcon } from './send-icon'; // Adjust path
 
 // Define categoryQueries directly here or pass as prop if it needs to be dynamic
@@ -33,6 +33,7 @@ interface ChatInputProps {
   showExamples: boolean; // Control visibility of example section
   activeCategory: CategoryKey | null;
   onToggleCategory: (category: CategoryKey) => void;
+  isSticky?: boolean; // Whether the input is in sticky mode
 }
 
 export const ChatInput = ({
@@ -44,6 +45,7 @@ export const ChatInput = ({
   showExamples,
   activeCategory,
   onToggleCategory,
+  isSticky = false, // Default to false
 }: ChatInputProps) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -101,11 +103,10 @@ export const ChatInput = ({
           ref={textareaRef}
           rows={1}
           placeholder={placeholder}
-          className="w-full resize-none overflow-y-hidden rounded-[40px] border border-gray-300 bg-white pl-5 pr-20 pt-[1.25rem] pb-[1.15rem] text-gray-900 text-lg leading-normal shadow-md transition-all focus:border-[#44B8D7] focus:outline-none focus:ring-2 focus:ring-[#44B8D7] dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:focus:border-[#44B8D7] dark:focus:ring-[#44B8D7]"
+          className={`w-full resize-none overflow-y-hidden rounded-[40px] border border-gray-300 bg-white pl-5 pr-20 pt-[1.25rem] pb-[1.15rem] text-gray-900 text-md leading-normal ${!isSticky ? 'shadow-md' : ''} transition-all focus:border-[#44B8D7] focus:outline-none focus:ring-2 focus:ring-[#44B8D7] dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:focus:border-[#44B8D7] dark:focus:ring-[#44B8D7]`}
           value={inputValue}
           onChange={handleTextareaChange} // Use updated handler
           onKeyDown={handleKeyDown}
-          disabled={isLoading}
           style={{ maxHeight: '150px' }} // Optional: prevent excessive growth
         />
         <button
@@ -118,7 +119,7 @@ export const ChatInput = ({
           aria-label="Send message"
           disabled={isLoading || !inputValue.trim()} // Disable if input is empty too
         >
-          {isLoading ? <LoadingSpinner /> : <SendIcon />}
+          <SendIcon />
         </button>
       </div>
 
@@ -126,7 +127,7 @@ export const ChatInput = ({
       {showExamples && (
         <div className="mt-3 flex flex-col gap-2">
           {/* Category Buttons */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+          <div className="flex flex-wrap justify-center gap-2">
             {(Object.keys(categoryQueries) as Array<CategoryKey>).map(
               (catKey) => {
                 // Create readable labels if needed, or use keys directly
@@ -140,7 +141,7 @@ export const ChatInput = ({
                     key={catKey}
                     type="button"
                     onClick={() => onToggleCategory(catKey)}
-                    className={`text-left p-3 bg-gray-50 border rounded-lg hover:bg-gray-100 text-sm font-medium text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-700 ${
+                    className={`inline-flex px-3 py-2 bg-gray-50 border rounded-lg hover:bg-gray-100 text-sm font-medium text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-700 ${
                       activeCategory === catKey
                         ? 'border-[#44B8D7] bg-[#E5F1F4] dark:bg-[#0f3a47]'
                         : 'border-gray-200'

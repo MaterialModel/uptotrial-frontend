@@ -1,19 +1,15 @@
 export const Footer = () => {
   return (
-    <footer className="wrapper">
-      <div className="flex items-center justify-between">
-        <p className="text-xs">
-          &copy; {new Date().getFullYear()}. Built in San Francisco. Ideated in
-          Boston.
-        </p>
-        <span>&nbsp;</span>
-        <a
+    <footer className="fixed bottom-0 w-full bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 py-1 z-[950] text-center">
+      <p className="text-xs text-gray-500 dark:text-gray-400">
+        &copy; {new Date().getFullYear()}. Built in San Francisco. Ideated in
+        Boston. <a
           href="mailto:william_shen@hms.harvard.edu"
-          className="text-xs underline hover:text-[#008BB0] dark:hover:text-[#44B8D7] transition-colors"
+          className="underline hover:text-[#008BB0] dark:hover:text-[#44B8D7] transition-colors"
         >
           Contact
         </a>
-      </div>
+      </p>
     </footer>
   );
 };

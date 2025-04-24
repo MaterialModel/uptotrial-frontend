@@ -10,6 +10,30 @@ interface ChatMessageItemProps {
 }
 
 export const ChatMessageItem = ({ message }: ChatMessageItemProps) => {
+  // Format JSON content if it exists in the message
+  const formatContent = (content: string): string => {
+    // Check if the content contains JSON data
+    const jsonRegex = /\{.*"query_cond":.*\}/s;
+    const match = content.match(jsonRegex);
+    
+    if (match) {
+      try {
+        // Extract the JSON part
+        const jsonStr = match[0];
+        // Parse and stringify with formatting
+        const formattedJson = JSON.stringify(JSON.parse(jsonStr), null, 2);
+        // Replace the original JSON with the formatted version, preserving any text before or after
+        return content.replace(jsonStr, '```json\n' + formattedJson + '\n```');
+      } catch (e) {
+        // If JSON parsing fails, return original content
+        console.error('Failed to parse JSON:', e);
+        return content;
+      }
+    }
+    
+    return content;
+  };
+
   return (
     <div
       className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start w-full'}`}
