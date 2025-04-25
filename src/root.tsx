@@ -15,7 +15,7 @@ import '@/lib/styles/globals.css';
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" className="h-full" suppressHydrationWarning>
       <head>
         <meta charSet="UTF-8" />
         <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg" />
@@ -23,7 +23,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <title>vite-react-tailwind-starter</title>
         <Links />
       </head>
-      <body>
+      <body className="h-full">
         <HelmetProvider>
           <AppLayout>{children}</AppLayout>
         </HelmetProvider>

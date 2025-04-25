@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           elementFormDefault="qualified">
+
+  <!-- ───────────── Root ───────────── -->
+  <xs:element name="response">
+    <xs:complexType>
+      <xs:sequence>
+        <!-- LLM's chain-of-thought (optional, not user-visible) -->
+        <xs:element name="thought" type="xs:string" minOccurs="0"/>
+
+        <!-- One or more tool invocations (optional) -->
+        <xs:element name="tool" type="toolType"  minOccurs="0" maxOccurs="unbounded"/>
+
+        <!-- Details of each tool call (optional, can repeat) -->
+        <xs:element name="tool_details" type="toolDetailsType"
+                    minOccurs="0" maxOccurs="unbounded"/>
+
+        <!-- Final answer for the user (mandatory) -->
+        <xs:element name="answer" type="answerType"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <!-- ───────────── Tool summary ───────────── -->
+  <xs:complexType name="toolType">
+    <!-- Example content: "list_studies" or "fetch_study" -->
+    <xs:simpleContent>
+      <xs:extension base="xs:string"/>
+    </xs:simpleContent>
+  </xs:complexType>
+
+  <!-- ───────────── Tool details ───────────── -->
+  <xs:complexType name="toolDetailsType">
+    <xs:simpleContent>
+      <xs:extension base="xs:string"/>
+    </xs:simpleContent>
+  </xs:complexType>
+
+  <!-- ───────────── Answer block ───────────── -->
+  <xs:complexType name="answerType">
+    <xs:sequence>
+      <!-- Free-form explanation -->
+      <xs:element name="text"  type="xs:string" minOccurs="0"/>
+
+      <!-- Zero or more study cards -->
+      <xs:element name="card" type="cardType"   minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- ───────────── Clinical-trial card ───────────── -->
+  <xs:complexType name="cardType">
+    <xs:sequence>
+      <xs:element name="status"        type="xs:string"                minOccurs="0"/>
+      <xs:element name="ntcid"         type="xs:string"/>                             
+      <xs:element name="phase"         type="xs:string"                minOccurs="0"/>
+      <xs:element name="enrollment"    type="xs:positiveInteger"       minOccurs="0"/>
+      <xs:element name="title"         type="xs:string"/>
+      <xs:element name="url"           type="xs:anyURI"/>
+      <xs:element name="official_title"           type="xs:string"      minOccurs="0"/>
+      <xs:element name="study_start"               type="xs:date"       minOccurs="0"/>
+      <xs:element name="primary_completion_date"   type="xs:date"       minOccurs="0"/>
+      <xs:element name="study_completion_date"     type="xs:date"       minOccurs="0"/>
+      <xs:element name="resulted_posted"           type="xs:date"       minOccurs="0"/>
+      <xs:element name="intervention"              type="xs:string"     minOccurs="0"/>
+      <xs:element name="sponsor"                   type="xs:string"     minOccurs="0"/>
+      <xs:element name="location"                  type="xs:string"     minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+</xs:schema>

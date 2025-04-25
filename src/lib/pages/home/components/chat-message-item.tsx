@@ -1,4 +1,4 @@
-import ReactMarkdown from 'react-markdown';
+import { XMLRenderer } from './xml-renderer';
 
 interface ChatMessage {
   role: string;
@@ -10,28 +10,9 @@ interface ChatMessageItemProps {
 }
 
 export const ChatMessageItem = ({ message }: ChatMessageItemProps) => {
-  // Format JSON content if it exists in the message
-  const formatContent = (content: string): string => {
-    // Check if the content contains JSON data
-    const jsonRegex = /\{.*"query_cond":.*\}/s;
-    const match = content.match(jsonRegex);
-    
-    if (match) {
-      try {
-        // Extract the JSON part
-        const jsonStr = match[0];
-        // Parse and stringify with formatting
-        const formattedJson = JSON.stringify(JSON.parse(jsonStr), null, 2);
-        // Replace the original JSON with the formatted version, preserving any text before or after
-        return content.replace(jsonStr, '```json\n' + formattedJson + '\n```');
-      } catch (e) {
-        // If JSON parsing fails, return original content
-        console.error('Failed to parse JSON:', e);
-        return content;
-      }
-    }
-    
-    return content;
+  // Check if the content is XML conforming to our schema
+  const isXmlContent = (content: string): boolean => {
+    return content.trim().startsWith('<?xml') || content.trim().startsWith('<response');
   };
 
   return (
@@ -48,15 +29,11 @@ export const ChatMessageItem = ({ message }: ChatMessageItemProps) => {
         <div
           className={`prose dark:prose-invert prose-sm sm:prose-base ${message.role !== 'user' ? 'max-w-none' : 'font-semibold'} transition-all duration-300`}
         >
-          <ReactMarkdown
-            components={{
-              a: ({ node, ...props }) => (
-                <a target="_blank" rel="noopener noreferrer" {...props} />
-              ),
-            }}
-          >
-            {message.content}
-          </ReactMarkdown>
+          {isXmlContent(message.content) ? (
+            <XMLRenderer content={message.content} />
+          ) : (
+            <div className="whitespace-pre-wrap">{message.content}</div>
+          )}
         </div>
       </div>
     </div>

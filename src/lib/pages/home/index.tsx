@@ -131,7 +131,7 @@ const Home = () => {
   }
 
   return (
-    <div className={`flex flex-col items-center justify-center h-full gap-8 px-0 md:px-8 lg:px-12 pb-10 ${hasSubmittedInput ? 'pt-12' : 'pt-20 md:pt-28 lg:pt-40'}`}>
+    <div className={`flex flex-col items-center justify-center h-full gap-2 px-0 md:px-8 lg:px-12 pb-10 ${hasSubmittedInput ? 'pt-12' : 'pt-20 md:pt-28 lg:pt-40'}`}>
       {hasSubmittedInput ? (
         // Remove the extra space div
         <></>
