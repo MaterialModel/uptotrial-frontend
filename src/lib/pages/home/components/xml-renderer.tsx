@@ -1,4 +1,4 @@
-import { ReactNode, useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 
 interface CardProps {
   status?: string;
@@ -20,13 +20,6 @@ interface CardProps {
 interface AnswerProps {
   text?: string;
   cards?: CardProps[];
-}
-
-interface XMLResponseProps {
-  thought?: string;
-  tools?: string[];
-  tool_details?: string[];
-  answer: AnswerProps;
 }
 
 const StatusButton = (status: string): string => {
@@ -462,9 +455,18 @@ export const XMLRenderer = ({ content }: { content: string }) => {
     }
   }, [content]);
 
+  // Extract streaming content from text tag
+  const extractStreamingText = (xml: string): string | undefined => {
+    const textMatch = xml.match(/<text>([\s\S]*?)(<\/text>|$)/);
+    return textMatch ? textMatch[1] : undefined;
+  };
+
   try {
     // Attempt to repair incomplete XML by adding missing closing tags
     const repairedXml = repairIncompleteXml(content);
+    
+    // While streaming, also try to extract partial text content
+    const streamingText = isStreaming ? extractStreamingText(content) : undefined;
     
     // Parse XML content
     const parser = new DOMParser();
@@ -476,15 +478,12 @@ export const XMLRenderer = ({ content }: { content: string }) => {
     // Extract data from XML according to schema - safely handle missing elements
     const thoughtElement = xmlDoc.getElementsByTagName("thought")[0];
     const thought = thoughtElement ? thoughtElement.textContent : undefined;
-    
-    const toolElements = xmlDoc.getElementsByTagName("tool");
-    const tools = Array.from(toolElements).map(tool => tool.textContent || "");
-    
+
     const toolDetailElements = xmlDoc.getElementsByTagName("tool_details");
     const toolDetails = Array.from(toolDetailElements).map(tool => tool.textContent || "");
     
     const answerElement = xmlDoc.getElementsByTagName("answer")[0];
-    let answer: AnswerProps = { text: "", cards: [] };
+    const answer: AnswerProps = { text: "", cards: [] };
     
     if (answerElement) {
       const textElement = answerElement.getElementsByTagName("text")[0];
@@ -499,7 +498,7 @@ export const XMLRenderer = ({ content }: { content: string }) => {
         
         const getElementNumber = (name: string) => {
           const text = getElementText(name);
-          return text ? parseInt(text, 10) : undefined;
+          return text ? Number.parseInt(text, 10) : undefined;
         };
         
         return {
@@ -564,12 +563,18 @@ export const XMLRenderer = ({ content }: { content: string }) => {
           </div>
         )}
 
-        {/* Answer text */}
-        {answer.text && (
+        {/* Answer text - show streaming content if available */}
+        {(answer.text || streamingText) && (
           <div className="prose dark:prose-invert prose-sm sm:prose-base mb-4 max-w-none">
-            {answer.text.split('\n').map((paragraph, idx) => (
-              <p key={idx}>{paragraph}</p>
-            ))}
+            {streamingText ? 
+              streamingText.split('\n').map((paragraph, idx) => (
+                <p key={idx}>{paragraph}</p>
+              ))
+            : 
+              answer.text?.split('\n').map((paragraph, idx) => (
+                <p key={idx}>{paragraph}</p>
+              ))
+            }
           </div>
         )}
 
