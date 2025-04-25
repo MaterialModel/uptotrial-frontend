@@ -1,4 +1,4 @@
-import { ReactNode, useState } from 'react';
+import { ReactNode, useState, useEffect } from 'react';
 
 interface CardProps {
   status?: string;
@@ -141,6 +141,9 @@ const Card = (props: CardProps) => {
     };
   };
 
+  // Check if results have been posted
+  const resultsPosted = isDateInPast(props.resulted_posted);
+
   return (
     <div className="mt-4 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
       {/* NCT ID Title Bar - Now clickable */}
@@ -262,7 +265,7 @@ const Card = (props: CardProps) => {
       {isExpanded && (
         <div className="p-4">
           {/* Status and Enrollment buttons */}
-          {(props.status || props.enrollment) && (
+          {(props.status || props.enrollment || resultsPosted) && (
             <div className="flex items-center mb-2">
               {props.status && (
                 <span className={`inline-block px-2 py-0.5 text-xs leading-none rounded-full border ${StatusButton(props.status)}`}>
@@ -273,6 +276,19 @@ const Card = (props: CardProps) => {
                 <span className="ml-2 inline-block px-2 py-0.5 text-xs leading-none rounded-full border bg-gray-100 text-gray-800 border-gray-300 dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600">
                   Enrollment: {props.enrollment}
                 </span>
+              )}
+              {resultsPosted && (
+                <a 
+                  href={`https://clinicaltrials.gov/study/${props.ntcid}?tab=results`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="ml-2 inline-flex items-center pl-2 pr-1 py-0.5 text-xs leading-none rounded-full border bg-purple-100 text-purple-800 border-purple-300 dark:bg-purple-900 dark:text-purple-100 dark:border-purple-700 hover:bg-purple-200 dark:hover:bg-purple-800 transition-colors no-underline"
+                >
+                  View results
+                  <svg className="w-3 h-3 ml-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path>
+                  </svg>
+                </a>
               )}
             </div>
           )}
@@ -433,6 +449,19 @@ const ToolDetail = ({ content }: { content: string }) => {
 };
 
 export const XMLRenderer = ({ content }: { content: string }) => {
+  const [isStreaming, setIsStreaming] = useState(true);
+  
+  // Set streaming to false after content seems complete
+  useEffect(() => {
+    // If we have complete XML structure, consider streaming done
+    if (content.includes('</response>') && !content.endsWith('<')) {
+      const timer = setTimeout(() => {
+        setIsStreaming(false);
+      }, 1000); // Short delay to ensure content is fully loaded
+      return () => clearTimeout(timer);
+    }
+  }, [content]);
+
   try {
     // Attempt to repair incomplete XML by adding missing closing tags
     const repairedXml = repairIncompleteXml(content);
@@ -509,9 +538,11 @@ export const XMLRenderer = ({ content }: { content: string }) => {
     // Render the parsed content
     return (
       <div className="xml-renderer">
-        {hasParseErrors && (
-          <div className="italic text-amber-600 dark:text-amber-400 text-sm mb-2 bg-amber-50 dark:bg-amber-900/20 p-2 rounded">
-            Showing partial response while content is streaming...
+        {isStreaming && (
+          <div className="flex items-center justify-center my-4">
+            <div className="italic font-normal text-gray-500 dark:text-gray-400 pr-1 pb-0.5">
+              All of our agents are currently busy... working for you :)
+            </div>
           </div>
         )}
         
