@@ -12,7 +12,7 @@ import tsConfigPaths from 'vite-tsconfig-paths';
 const pwaOptions: Partial<VitePWAOptions> = {
   registerType: 'autoUpdate',
   manifest: {
-    short_name: 'vite-react-tailwind-starter',
+    short_name: 'UpToTrial',
     name: 'Vite React App Template',
     lang: 'en',
     start_url: '/',

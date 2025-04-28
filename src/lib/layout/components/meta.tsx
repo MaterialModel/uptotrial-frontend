@@ -5,7 +5,7 @@ const APP_NAME = 'UpToTrial';
 export const Meta = () => {
   return (
     <Helmet>
-      <title>UpToTrial</title>
+      <title>{APP_NAME}</title>
       <meta
         name="description"
         content="AI-powered search for clinical trials"

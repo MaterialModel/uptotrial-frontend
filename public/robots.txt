@@ -3,4 +3,4 @@ User-agent: *
 Allow: /
 
 # Host
-Host: https://vite-react-tailwind-starter.sznm.dev
+Host: https://uptotrial.com
