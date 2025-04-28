@@ -83,16 +83,20 @@ const attrsToProps = (el: Element) => {
 
 /** Repair a truncated XML fragment — now also fixes an *open* tag at EOF */
 const repairXML = (xml: string): string => {
+  // Escape ampersands that aren't already part of a valid entity
+  // Only replace & that aren't followed by a valid entity pattern
+  const escapedXml = xml.replace(/&(?!(amp|lt|gt|quot|apos|#[0-9]+|#x[0-9a-fA-F]+);)/g, '&amp;');
+  
   const open: Array<string> = [];
   const tagRE = TAG_REGEX;
 
   // 1. Scan all *complete* tags
   const matches: Array<RegExpExecArray> = [];
   let m: RegExpExecArray | null;
-  m = tagRE.exec(xml);
+  m = tagRE.exec(escapedXml);
   while (m !== null) {
     matches.push(m);
-    m = tagRE.exec(xml);
+    m = tagRE.exec(escapedXml);
   }
 
   for (const [, close, rawName, selfClose] of matches) {
@@ -110,13 +114,13 @@ const repairXML = (xml: string): string => {
   }
 
   // 2. Detect an *incomplete* opening tag at the end of the buffer
-  const lastLt = xml.lastIndexOf('<');
-  const lastGt = xml.lastIndexOf('>');
-  let fixed = xml;
+  const lastLt = escapedXml.lastIndexOf('<');
+  const lastGt = escapedXml.lastIndexOf('>');
+  let fixed = escapedXml;
 
   if (lastLt > lastGt) {
     // there is a dangling "< …"
-    const partial = xml.slice(lastLt + 1);
+    const partial = escapedXml.slice(lastLt + 1);
     const nameMatch = TAG_NAME_REGEX.exec(partial);
     if (nameMatch) {
       open.push(nameMatch[1].toLowerCase()); // treat it as just-opened
