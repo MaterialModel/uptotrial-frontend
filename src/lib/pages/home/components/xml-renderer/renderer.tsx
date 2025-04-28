@@ -85,8 +85,11 @@ const attrsToProps = (el: Element) => {
 const repairXML = (xml: string): string => {
   // Escape ampersands that aren't already part of a valid entity
   // Only replace & that aren't followed by a valid entity pattern
-  const escapedXml = xml.replace(/&(?!(amp|lt|gt|quot|apos|#[0-9]+|#x[0-9a-fA-F]+);)/g, '&amp;');
-  
+  const escapedXml = xml.replace(
+    /&(?!(amp|lt|gt|quot|apos|#[0-9]+|#x[0-9a-fA-F]+);)/g,
+    '&amp;',
+  );
+
   const open: Array<string> = [];
   const tagRE = TAG_REGEX;
 
