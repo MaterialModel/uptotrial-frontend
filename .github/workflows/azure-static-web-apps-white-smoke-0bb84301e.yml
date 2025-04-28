@@ -19,6 +19,16 @@ jobs:
         with:
           submodules: true
           lfs: false
+      - uses: pnpm/action-setup@v3
+        with:
+          version: 10
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+      - name: Configure pnpm
+        run: pnpm config set legacy-peer-deps true
       - name: Build And Deploy
         id: builddeploy
         uses: Azure/static-web-apps-deploy@v1
@@ -33,6 +43,7 @@ jobs:
           app_location: "/" # App source code path
           api_location: "" # Api source code path - optional
           output_location: "build" # Built app content directory - optional
+          app_build_command: "pnpm build" # Use pnpm to build
           ###### End of Repository/Build Configurations ######
 
   close_pull_request_job:
@@ -46,3 +57,4 @@ jobs:
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_WHITE_SMOKE_0BB84301E }}
           action: "close"
+          app_location: "/" # Required parameter
