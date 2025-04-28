@@ -23,30 +23,29 @@ UpToTrial is a modern web application that helps patients, researchers, and heal
 ## Requirements
 
 - Node.js 22.11.x or higher
-- pnpm 10.x or higher
 
 ## Getting Started
 
 1. **Install dependencies:**
 
 ```bash
-pnpm install
+npm install
 ```
 
 2. **Start the development server:**
 
 ```bash
-pnpm dev
+npm run dev
 ```
 
 3. **Build for production:**
 
 ```bash
-pnpm build
+npm run build
 ```
 
 ## Deployment
 
-- **Build command:** `pnpm build`
+- **Build command:** `npm run build`
 - **Output directory:** `build/client`
 - **Supported platforms:** Vercel, Netlify, or any static hosting

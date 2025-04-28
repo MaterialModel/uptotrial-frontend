@@ -5,29 +5,24 @@
   "author": "agustinusnathaniel",
   "type": "module",
   "engines": {
-    "node": ">=22.11.x",
-    "pnpm": ">=10"
-  },
-  "packageManager": "pnpm@10.7.1",
-  "pnpm": {
-    "neverBuiltDependencies": []
+    "node": ">=22.11.x"
   },
   "scripts": {
     "dev": "react-router dev",
-    "build": "pnpm typegen && react-router build --force",
+    "build": "npm run typegen && react-router build --force",
     "serve": "vite preview",
     "biome:check": "biome check",
-    "biome:fix": "pnpm biome:check --write",
+    "biome:fix": "npm run biome:check -- --write",
     "biome:ci": "biome ci",
     "typegen": "react-router typegen",
     "type:check": "react-router typegen && tsc",
-    "turbo": "pnpm dlx turbo@2.5.0",
+    "turbo": "npx turbo@2.5.0",
     "test": "vitest run",
     "test:ui": "vitest --ui --coverage",
     "test:coverage": "vitest --coverage run",
-    "check:turbo": "pnpm turbo biome:check type:check test",
-    "up-interactive": "pnpm up -i",
-    "up-latest": "pnpm up-interactive -L",
+    "check:turbo": "npm run turbo biome:check type:check test",
+    "up-interactive": "npm update --interactive",
+    "up-latest": "npm update --latest",
     "release": "cross-env HUSKY=0 commit-and-tag-version",
     "push-release": "git push --follow-tags origin main",
     "prepare": "husky",

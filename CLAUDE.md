@@ -3,29 +3,27 @@
 ## Project Overview
 This is a modern React application built with Vite, TypeScript, and TailwindCSS. It uses React Router v7 in framework configuration mode.
 
-## Key Commands
+## Available Commands
 
 ```bash
-# Development
-pnpm dev              # Start development server
-pnpm build            # Build for production
-pnpm serve            # Preview production build
+npm run dev              # Start development server
+npm run build            # Build for production
+npm run serve            # Preview production build
 
-# Code Quality
-pnpm biome:check      # Check code with Biome
-pnpm biome:fix        # Fix linting issues
-pnpm type:check       # Run TypeScript type checking
-pnpm check:turbo      # Run linting, type checking, and tests in parallel
+# Development Tools
+npm run biome:check      # Check code with Biome
+npm run biome:fix        # Fix linting issues
+npm run type:check       # Run TypeScript type checking
+npm run check:turbo      # Run linting, type checking, and tests in parallel
 
 # Testing
-pnpm test             # Run tests
-pnpm test:ui          # Run tests with UI
-pnpm test:coverage    # Generate test coverage
-
+npm run test             # Run tests
+npm run test:ui          # Run tests with UI
+npm run test:coverage    # Generate test coverage
 
 # Maintenance
-pnpm up-interactive   # Interactive dependency updates
-pnpm knip             # Find unused dependencies
+npm run up-interactive   # Interactive dependency updates
+npm run knip             # Find unused dependencies
 ```
 
 ## Tech Stack & Architecture
@@ -59,6 +57,6 @@ pnpm knip             # Find unused dependencies
 - PWA support with vite-plugin-pwa
 
 ## Deployment
-- Build command: `pnpm build`
+- Build command: `npm run build`
 - Output directory: `build/client`
 - Ready to deploy on Vercel or Netlify (configuration included)
