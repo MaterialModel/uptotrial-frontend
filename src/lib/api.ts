@@ -1,7 +1,9 @@
 // API base URL
-const API_BASE_URL = typeof process.env.VITE_API_URL === 'string' && process.env.VITE_API_URL !== 'undefined' 
-  ? process.env.VITE_API_URL 
-  : 'http://localhost:8000';
+const API_BASE_URL =
+  typeof process.env.VITE_API_URL === 'string' &&
+  process.env.VITE_API_URL !== 'undefined'
+    ? process.env.VITE_API_URL
+    : 'http://localhost:8000';
 
 // Regex for extracting key-value pairs from events
 const eventRegex = /<event>([\s\S]*?)<\/event>/g;
