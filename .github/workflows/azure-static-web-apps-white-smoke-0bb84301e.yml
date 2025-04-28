@@ -18,6 +18,8 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: true
+      - name: Setup npm
+        run: npm config set legacy-peer-deps true
       - name: Build And Deploy
         id: builddeploy
         uses: Azure/static-web-apps-deploy@v1
