@@ -51,7 +51,7 @@ export const Header = () => {
           {shouldShowLogo && (
             <a href="/" className="flex items-center">
               <img
-                src="/assets/uptotrail.svg"
+                src="/assets/uptotrial.svg"
                 alt="UpToTrial Logo"
                 className="h-8 w-auto mr-3"
               />

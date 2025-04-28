@@ -141,7 +141,7 @@ const Home = () => {
         // Full title and logo for initial page
         <div className="mb-2 text-center">
           <img
-            src="/assets/uptotrail.svg"
+            src="/assets/uptotrial.svg"
             alt="UpToTrial Logo"
             className="mx-auto mb-4 h-24 w-auto"
           />

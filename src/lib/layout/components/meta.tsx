@@ -19,7 +19,7 @@ export const Meta = () => {
       <meta name="mobile-web-app-capable" content="yes" />
       <meta name="theme-color" content="#FFFFFF" />
 
-      <link rel="shortcut icon" href="/assets/uptotrail.svg" />
+      <link rel="shortcut icon" href="/assets/uptotrial.svg" />
       <link rel="preconnect" href="https://fonts.googleapis.com" />
       <link
         rel="preconnect"
