@@ -15,17 +15,21 @@ export const MessageList = ({ messages }: MessageListProps) => {
 
   // Custom scroll logic - only scroll when content is at least halfway down the page
   useEffect(() => {
-    if (messages.length === 0) return;
+    if (messages.length === 0) {
+      return;
+    }
 
     const checkScrollPosition = () => {
-      if (!messagesEndRef.current) return;
+      if (!messagesEndRef.current) {
+        return;
+      }
 
       // Get viewport dimensions
       const viewportHeight = window.innerHeight;
-      
+
       // Get position of the end marker
       const rect = messagesEndRef.current.getBoundingClientRect();
-      
+
       // Only scroll if end marker is below the halfway point of the viewport
       // (rect.top > viewportHeight / 2) means it's in the bottom half of the screen or lower
       if (rect.top > viewportHeight / 2) {
@@ -47,7 +51,7 @@ export const MessageList = ({ messages }: MessageListProps) => {
       <div className="flex flex-col gap-6">
         {messages.map((message, idx) => (
           <ChatMessageItem
-            key={`message-${idx}-${message.role}-${message.content.length}`} // More stable key that changes when content changes
+            key={`message-${idx}-${message.role}`}
             message={message}
           />
         ))}

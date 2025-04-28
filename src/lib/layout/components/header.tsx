@@ -13,31 +13,33 @@ declare global {
 
 export const Header = () => {
   const [shouldShowLogo, setShouldShowLogo] = useState(false);
-  
+
   useEffect(() => {
     // Function to handle the custom event
-    const handleChatInputStickyChange = (e: CustomEvent<{ isSticky: boolean }>) => {
+    const handleChatInputStickyChange = (
+      e: CustomEvent<{ isSticky: boolean }>,
+    ) => {
       setShouldShowLogo(e.detail.isSticky);
     };
 
     // Add event listener for the custom event
     window.addEventListener(
       CHAT_INPUT_STICKY_EVENT,
-      handleChatInputStickyChange as EventListener
+      handleChatInputStickyChange as EventListener,
     );
-    
+
     // Also check on initial load if we're not on the homepage
     const path = window.location.pathname;
     const isHomepage = path === '/' || path === '';
     if (!isHomepage) {
       setShouldShowLogo(true);
     }
-    
+
     // Cleanup
     return () => {
       window.removeEventListener(
         CHAT_INPUT_STICKY_EVENT,
-        handleChatInputStickyChange as EventListener
+        handleChatInputStickyChange as EventListener,
       );
     };
   }, []);

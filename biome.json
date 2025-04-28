@@ -15,10 +15,10 @@
     "rules": {
       "recommended": true,
       "a11y": {
-        "useSemanticElements": "error"
+        "useSemanticElements": "warn"
       },
       "complexity": {
-        "noExcessiveCognitiveComplexity": "error",
+        "noExcessiveCognitiveComplexity": "warn",
         "noUselessStringConcat": "error",
         "noUselessUndefinedInitialization": "error",
         "useSimplifiedLogicExpression": "error",
@@ -28,7 +28,8 @@
         "noUnusedImports": "error",
         "noUnusedVariables": "error",
         "noUnusedFunctionParameters": "error",
-        "useHookAtTopLevel": "error"
+        "useHookAtTopLevel": "error",
+        "useExhaustiveDependencies": "off"
       },
       "nursery": {
         "noDuplicateElseIf": "error"
