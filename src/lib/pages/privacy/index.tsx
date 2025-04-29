@@ -5,15 +5,18 @@ const Privacy = () => {
     <div className="container mx-auto px-4 py-16 max-w-4xl">
       <Helmet>
         <title>Privacy Policy | UpToTrial</title>
-        <meta name="description" content="Privacy Policy for UpToTrial - Information about data retention, Google Analytics usage, and contact details." />
+        <meta
+          name="description"
+          content="Privacy Policy for UpToTrial - Information about data retention, Google Analytics usage, and contact details."
+        />
         <link rel="canonical" href="https://uptotrial.com/privacy" />
       </Helmet>
-      
+
       <h1 className="text-3xl font-bold mb-6">Privacy Policy</h1>
       <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
         Last Updated: 04-28-2025
       </p>
-      
+
       <div className="space-y-6">
         <section>
           <h2 className="text-xl font-semibold mb-2">Data Retention</h2>
