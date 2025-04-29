@@ -148,11 +148,26 @@ const nodeToReact = (
     >
   >,
   path: Array<string> = [],
+  parentTag?: string,
 ): React.ReactNode => {
   if (node.nodeType === Node.TEXT_NODE) {
     const txt = node.textContent ?? '';
-    return txt.trim() ? txt : ' ';
+    const trimmed = txt.trim();
+    // If there's no actual text content, just return a space
+    if (!trimmed) {
+      return ' ';
+    }
+
+    // If 'text' component is in the registry AND parent is not already a text tag, wrap the text in it
+    const TextComponent = componentMap.text;
+    if (TextComponent && parentTag !== 'text') {
+      return <TextComponent key={generateUniqueId()}>{txt}</TextComponent>;
+    }
+
+    // Otherwise return the text as is
+    return txt;
   }
+
   if (
     node.nodeType === Node.COMMENT_NODE ||
     node.nodeType === Node.DOCUMENT_TYPE_NODE
@@ -171,7 +186,9 @@ const nodeToReact = (
   }
 
   const children = Array.from(el.childNodes)
-    .map((c) => nodeToReact(c, componentMap, [...path, generateUniqueId()]))
+    .map((c) =>
+      nodeToReact(c, componentMap, [...path, generateUniqueId()], tag),
+    )
     .filter(Boolean);
 
   const Cmp = componentMap[tag];
