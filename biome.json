@@ -14,6 +14,9 @@
     "enabled": true,
     "rules": {
       "recommended": true,
+      "security": {
+        "noDangerouslySetInnerHtml": "warn"
+      },
       "a11y": {
         "useSemanticElements": "warn"
       },

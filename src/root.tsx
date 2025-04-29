@@ -21,6 +21,21 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <link rel="icon" type="image/svg+xml" href="/assets/uptotrial.svg" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>UpToTrial</title>
+        {/* Google Analytics */}
+        <script
+          async
+          src="https://www.googletagmanager.com/gtag/js?id=G-6Z2FQYMLFD"
+        />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', 'G-6Z2FQYMLFD');
+            `,
+          }}
+        />
         <Links />
       </head>
       <body className="h-full">
