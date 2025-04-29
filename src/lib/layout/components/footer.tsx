@@ -7,7 +7,14 @@ export const Footer = () => {
           href="mailto:hi@uptotrial.com"
           className="underline hover:text-[#008BB0] dark:hover:text-[#44B8D7] transition-colors"
         >
-          Say hi!
+          Contact
+        </a>{' '}
+        |{' '}
+        <a
+          href="/privacy"
+          className="underline hover:text-[#008BB0] dark:hover:text-[#44B8D7] transition-colors"
+        >
+          Privacy Policy
         </a>
       </p>
     </footer>
