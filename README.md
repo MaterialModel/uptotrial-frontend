@@ -2,6 +2,8 @@
 
 AI-powered search engine for clinical trials at ClinicalTrials.gov
 
+Apache 2.0 License.
+
 ## Overview
 
 UpToTrial is a modern web application that helps patients, researchers, and healthcare providers find relevant clinical trials. The platform uses AI to improve search precision and make clinical trial information more accessible.
