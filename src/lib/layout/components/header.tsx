@@ -1,5 +1,6 @@
 import { ThemeToggle } from '@/lib/components/theme-toggle';
 import { useEffect, useState } from 'react';
+import { FaGithub } from 'react-icons/fa';
 
 // Define custom event name
 const CHAT_INPUT_STICKY_EVENT = 'chatInputStickyChange';
@@ -71,7 +72,16 @@ export const Header = () => {
             </a>
           )}
         </div>
-        <div className="ml-auto">
+        <div className="ml-auto flex items-center gap-3">
+          <a 
+            href="https://github.com/MaterialModel" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="inline-flex items-center px-3 py-1.5 text-sm font-medium rounded-md border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+          >
+            <FaGithub className="h-4 w-4 mr-1.5" aria-hidden="true" />
+            See the code
+          </a>
           <ThemeToggle />
         </div>
       </section>
