@@ -73,9 +73,9 @@ export const Header = () => {
           )}
         </div>
         <div className="ml-auto flex items-center gap-3">
-          <a 
-            href="https://github.com/MaterialModel" 
-            target="_blank" 
+          <a
+            href="https://github.com/MaterialModel"
+            target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center px-3 py-1.5 text-sm font-medium rounded-md border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
           >
