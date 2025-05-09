@@ -1,5 +1,7 @@
 # UpToTrial
 
+See deployed version: https://uptotrial.com
+
 AI-powered search engine for clinical trials at ClinicalTrials.gov
 
 Apache 2.0 License.
